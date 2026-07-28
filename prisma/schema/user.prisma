@@ -1,0 +1,20 @@
+enum Role {
+  RENTER
+  OWNER
+  ADMIN
+}
+
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(RENTER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cars     Car[]
+  bookings Booking[]
+}
