@@ -15,6 +15,8 @@ const config = {
 
   STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY!,
   STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET!,
+
+  CLIENT_URL: env.CLIENT_URL ?? "http://localhost:3000",
 }
 
 export default config

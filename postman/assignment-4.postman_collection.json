@@ -1,0 +1,216 @@
+{
+  "info": {
+    "name": "Car Rental API",
+    "description": "Auth, cars, bookings, payments (Stripe checkout + webhook).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "carId", "value": "" },
+    { "key": "bookingId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Renter\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"RENTER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res?.data?.accessToken) pm.collectionVariables.set('accessToken', res.data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          }
+        },
+        {
+          "name": "Get Users (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cars",
+      "item": [
+        {
+          "name": "List Cars",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/cars", "host": ["{{baseUrl}}"], "path": ["cars"] }
+          }
+        },
+        {
+          "name": "Get Car",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/cars/{{carId}}", "host": ["{{baseUrl}}"], "path": ["cars", "{{carId}}"] }
+          }
+        },
+        {
+          "name": "Add Car (OWNER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res?.data?.car?.id) pm.collectionVariables.set('carId', res.data.car.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/cars", "host": ["{{baseUrl}}"], "path": ["cars"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"dailyRate\": 45,\n  \"location\": \"Dhaka\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Edit Car (OWNER/ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/cars/{{carId}}", "host": ["{{baseUrl}}"], "path": ["cars", "{{carId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dailyRate\": 50,\n  \"isAvailable\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Car (OWNER/ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/cars/{{carId}}", "host": ["{{baseUrl}}"], "path": ["cars", "{{carId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking (RENTER)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res?.data?.booking?.id) pm.collectionVariables.set('bookingId', res.data.booking.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/bookings", "host": ["{{baseUrl}}"], "path": ["bookings"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"startDate\": \"2026-08-10\",\n  \"endDate\": \"2026-08-15\"\n}"
+            }
+          }
+        },
+        {
+          "name": "My Bookings (RENTER)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/bookings/my", "host": ["{{baseUrl}}"], "path": ["bookings", "my"] }
+          }
+        },
+        {
+          "name": "All Bookings (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/bookings", "host": ["{{baseUrl}}"], "path": ["bookings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Checkout (RENTER)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/payments/checkout/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "checkout", "{{bookingId}}"]
+            }
+          }
+        },
+        {
+          "name": "My Payments (RENTER)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/payments/my", "host": ["{{baseUrl}}"], "path": ["payments", "my"] }
+          }
+        }
+      ]
+    }
+  ]
+}
